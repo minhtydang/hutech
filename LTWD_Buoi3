@@ -1,0 +1,93 @@
+```csharp
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace tuan3
+{
+    public partial class tuan3  : Form
+    {
+        public tuan3()
+        {
+            InitializeComponent();
+        }
+
+        private void listView1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void t(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtLastName.Text) &&
+                !string.IsNullOrEmpty(txtFirstName.Text) &&
+                !string.IsNullOrEmpty(txtPhone.Text))
+            {
+                string[] row = { txtLastName.Text, txtFirstName.Text, txtPhone.Text };
+                var listViewItem = new ListViewItem(row);
+                listView1.Items.Add(listViewItem);
+                txtLastName.Clear();
+                txtFirstName.Clear();
+                txtPhone.Clear();
+            }
+            else
+            {
+                MessageBox.Show("INFORMATION NOT FULL.");
+            }
+        }
+
+        private void txtLastName_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnDel_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                listView1.Items.Remove(listView1.SelectedItems[0]);
+
+                // NULL
+                txtLastName.Clear();
+                txtFirstName.Clear();
+                txtPhone.Clear();
+            }
+            else
+            {
+                MessageBox.Show("Select the line you want to delete.");
+            }
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            
+            {
+                var selectedItem = listView1.SelectedItems[0];
+                selectedItem.SubItems[0].Text = txtLastName.Text;
+                selectedItem.SubItems[1].Text = txtFirstName.Text;
+                selectedItem.SubItems[2].Text = txtPhone.Text;
+                txtLastName.Clear();
+                txtFirstName.Clear();
+                txtPhone.Clear();
+            }
+
+            else 
+            {
+                MessageBox.Show("Select the line you want to edit.");
+            }
+        }
+    }
+    
+}
