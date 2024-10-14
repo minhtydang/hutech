@@ -1,0 +1,174 @@
+'''csharp
+using De02.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace De02
+{
+    public partial class frmSV : Form
+    {
+       Dethi01Entities triet = new Dethi01Entities();
+        /*        public void loadSinhVien()
+                {
+                    var N = triet.Sinhviens.ToList();
+                    dgvSinhVien.DataSource = N;
+                }*/
+        public void LoadSinhVien()
+        {
+            var sinhVienList = triet.Sinhviens.ToList(); // Lấy danh sách sinh viên từ cơ sở dữ liệu
+            dgvSinhVien.DataSource = sinhVienList; // Gán danh sách vào DataGridView
+        }
+        public frmSV()
+        {
+            InitializeComponent();
+        }
+
+        private void frmSV_Load(object sender, EventArgs e)
+        {
+            LoadSinhVien();
+            LoadLopHoc();
+        }
+
+        public void LoadLopHoc()
+        {
+            // Lấy danh sách lớp từ cơ sở dữ liệu
+            var lopHocList = triet.Lops.ToList();
+
+            // Gán dữ liệu vào ComboBox
+            cmbLopHoc.DataSource = lopHocList;
+
+            // Gán giá trị hiển thị là tên lớp
+            cmbLopHoc.DisplayMember = "TenLop";
+
+            // Gán giá trị thực tế là mã lớp
+            cmbLopHoc.ValueMember = "MaLop";
+        }
+        private void dgvQLSV_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+        }
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtStudentID.Text) || string.IsNullOrEmpty(txtName.Text) || cmbLopHoc.SelectedValue == null)
+            {
+                MessageBox.Show("Vui lòng điền đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Tạo đối tượng sinh viên mới
+            var sinhVienMoi = new Sinhvien
+            {
+                MaSV = txtStudentID.Text,
+                HotenSV = txtName.Text,
+                NgaySinh = dtpNgaySinh.Value,
+                MaLop = cmbLopHoc.SelectedValue.ToString()
+            };
+
+            // Thêm sinh viên mới vào cơ sở dữ liệu
+            triet.Sinhviens.Add(sinhVienMoi);
+            triet.SaveChanges();
+
+            // Làm mới danh sách sinh viên sau khi thêm
+            LoadSinhVien();
+
+            // Thông báo thêm thành công
+            MessageBox.Show("Thêm sinh viên mới thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Xóa các trường dữ liệu để chuẩn bị cho lần nhập tiếp theo
+            txtStudentID.Clear();
+            txtName.Clear();
+            dtpNgaySinh.Value = DateTime.Now;
+            cmbLopHoc.SelectedIndex = -1; // Đặt lại ComboBox
+        }
+
+        private void bthDelete_Click(object sender, EventArgs e)
+        {
+            var maSV = txtStudentID.Text;
+            var sinhVien = triet.Sinhviens.SingleOrDefault(sv => sv.MaSV == maSV);
+
+            if (sinhVien != null)
+            {
+                triet.Sinhviens.Remove(sinhVien);
+                triet.SaveChanges();
+                LoadSinhVien();
+                MessageBox.Show("Xóa sinh viên thành công!");
+            }
+            else
+            {
+                MessageBox.Show("Không tìm thấy sinh viên!");
+            }
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            var searchTerm = txtSearch.Text;
+            var results = triet.Sinhviens
+                .Where(sv => sv.HotenSV.Contains(searchTerm))
+                .ToList();
+
+            dgvSinhVien.DataSource = results;
+        }
+
+        private void btnFix_Click(object sender, EventArgs e)
+        {
+            var maSV = txtStudentID.Text;
+
+            var sinhVien = triet.Sinhviens.FirstOrDefault(sv => sv.MaSV == maSV);
+
+            // Kiểm tra nếu sinh viên tồn tại
+            if (sinhVien != null)
+            {
+                
+                sinhVien.HotenSV = txtName.Text;  // Cập nhật tên sinh viên
+                sinhVien.NgaySinh = dtpNgaySinh.Value; // Cập nhật ngày sinh
+                sinhVien.MaLop = cmbLopHoc.SelectedValue.ToString(); // Cập nhật mã lớp
+
+                // Lưu thay đổi vào cơ sở dữ liệu
+                triet.SaveChanges();
+
+                // Tải lại danh sách sinh viên để hiển thị thông tin cập nhật
+                LoadSinhVien();
+
+                // Hiển thị thông báo cập nhật thành công
+                MessageBox.Show("Cập nhật sinh viên thành công!");
+            }
+            else
+            {
+                // Nếu không tìm thấy sinh viên, hiển thị thông báo
+                MessageBox.Show("Không tìm thấy sinh viên cần sửa!");
+            }
+        }
+
+        private void dgvSinhVien_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                // Lấy dòng được chọn
+                var row = dgvSinhVien.Rows[e.RowIndex];
+
+                // Hiển thị thông tin sinh viên vào các điều khiển
+                txtStudentID.Text = row.Cells["MaSV"].Value.ToString(); // Giả sử bạn có TextBox txtMaSV
+                txtName.Text = row.Cells["HoTenSV"].Value.ToString(); // TextBox cho tên
+                dtpNgaySinh.Value = Convert.ToDateTime(row.Cells["NgaySinh"].Value); // DateTimePicker cho ngày sinh
+                cmbLopHoc.SelectedValue = row.Cells["MaLop"].Value; // Gán mã lớp vào ComboBox
+            }
+        }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn thoát?", "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                // Đóng form hiện tại
+                this.Close();
+            }
+        }
+    }
+}
