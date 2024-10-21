@@ -1,0 +1,109 @@
+'''csharp
+using lab07.Model;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace lab07
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        private ContextDb context = new ContextDb();
+        private BindingSource bindingSource = new BindingSource();
+        private int currentIndex = 0;
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            // TODO: This line of code loads data into the 'schoolDBDataSet1.Students' table. You can move, or remove it, as needed.
+            this.studentsTableAdapter1.Fill(this.schoolDBDataSet1.Students);
+            // TODO: This line of code loads data into the 'schoolDBDataSet.Students' table. You can move, or remove it, as needed.
+            this.studentsTableAdapter.Fill(this.schoolDBDataSet.Students);
+            bindingSource.DataSource = context.Students.ToList();
+            dgvSinhVien.DataSource = bindingSource;
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            var student = new Student
+            {
+                FullName = txtTen.Text,
+                Age = int.Parse(txtTuoi.Text),
+                Major = cmbNganh.Text
+            };
+            context.Students.Add(student);
+            context.SaveChanges();
+
+            bindingSource.DataSource = context.Students.ToList();
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (bindingSource.Current is Student student)
+            {
+                context.Students.Remove(student);
+                context.SaveChanges();
+                bindingSource.DataSource = context.Students.ToList();
+            }
+        }
+
+
+ 
+
+        private void dvgSinhVien_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void dgvSinhVien_SelectionChanged_1(object sender, EventArgs e)
+        {
+            if (bindingSource.Current is Student student)
+            {
+                txtTen.Text = student.FullName;
+                txtTuoi.Text = student.Age.ToString();
+                cmbNganh.Text = student.Major;
+            }
+        }
+
+        private void btnPrevious_Click(object sender, EventArgs e)
+        {
+            if (currentIndex > 0)
+            {
+                currentIndex--;
+                bindingSource.Position = currentIndex;
+            }
+        }
+
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            if (currentIndex < bindingSource.Count - 1)
+            {
+                currentIndex++;
+                bindingSource.Position = currentIndex;
+            }
+        }
+
+        private void btnFix_Click_1(object sender, EventArgs e)
+        {
+            if (bindingSource.Current is Student student)
+            {
+                student.FullName = txtTen.Text;
+                student.Age = int.Parse(txtTuoi.Text);
+                student.Major = cmbNganh.Text;
+                context.SaveChanges();
+
+                bindingSource.DataSource = context.Students.ToList();
+            }
+        }
+    }
+ }
+ 
